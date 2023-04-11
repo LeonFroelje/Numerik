@@ -37,5 +37,8 @@ const intervalToString = (interval: Interval) => {
 }
 
 export default function Home() { 
-  return <Bisektionsverfahren/>
+
+  return (
+    <Bisektionsverfahren/>
+  )
 }

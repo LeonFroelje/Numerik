@@ -13,13 +13,13 @@ export default function Controlbuttons(props: {
             <ButtonGroup>
                 <Button variant="outlined" onClick={() => {
                     props.setPrev();
-                }}>zurück</Button>
+                }}>Zurück</Button>
                 <Button variant="outlined" onClick={() => {
                     props.setStarted(false);
-                }}>stop</Button>
+                }}>Stop</Button>
                 <Button variant="outlined" onClick={() => {
                     props.setNext()
-                }}>weiter</Button>
+                }}>Weiter</Button>
    
             </ButtonGroup>
          )
@@ -27,6 +27,6 @@ export default function Controlbuttons(props: {
     return (
         <Button variant="outlined" onClick={() => {
             props.setStarted(true);
-          }}>Bisektionsverfahren starten</Button>  
+          }}>Start</Button>  
     )
 }
