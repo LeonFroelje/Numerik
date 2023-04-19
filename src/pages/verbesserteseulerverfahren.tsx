@@ -28,15 +28,20 @@ const EPSILON = 0.000001
 
 
 // f(y(t), t)
-const polygonverfahren = (f: math.EvalFunction, y_0: math.MathNumericType,
+const verbesserter_euler = (f: math.EvalFunction, y_0: math.MathNumericType,
     h: number, I: Interval) => {
     const solution = [];
     let y_n = y_0;
     let n = 0;
     while ((I.a as number) + n * h <= (I.b as number) + EPSILON) {
-        y_n = (y_n as number) + h * f.evaluate({
-            x: n * h + (I.a as number),
+        let x_n = n * h + (I.a as number);
+        let y_n2 = (y_n as number) + (h / 2) * f.evaluate({
+            x: x_n + h / 2,
             y: y_n
+        })
+        y_n = (y_n as number) + h * f.evaluate({
+            x: x_n + h / 2,
+            y: y_n2
         })
         solution.push({
             x: n * h + (I.a as number),
@@ -46,12 +51,16 @@ const polygonverfahren = (f: math.EvalFunction, y_0: math.MathNumericType,
     }
     return solution;
 }
-const polygonverfahren_sbs = (f: math.EvalFunction, y_n: math.MathNumericType,
-    t_n: number, h: number,): { x: number, y: math.MathNumericType } => {
+const verbesserter_euler_sbs = (f: math.EvalFunction, y_n: math.MathNumericType,
+    t_n: number, h: number): { x: number, y: math.MathNumericType } => {
 
-    y_n = (y_n as number) + h * f.evaluate({
-        x: t_n + h,
+    let y_n2 = (y_n as number) + (h / 2) * f.evaluate({
+        x: t_n + h / 2,
         y: y_n
+    })
+    y_n = (y_n as number) + h * f.evaluate({
+        x: t_n + h / 2,
+        y: y_n2
     })
     return {
         x: t_n,
@@ -60,19 +69,19 @@ const polygonverfahren_sbs = (f: math.EvalFunction, y_n: math.MathNumericType,
 }
 
 
-export default function eulerschepolygonverfahren() {
+export default function verbesserteseulerverfahren() {
     // Anfangswert
-    const [t_n, setT_n] = useState(0.8);
+    const [t_n, setT_n] = useState(0);
     const [stopValue, setStopValue] = useState(1.9);
     // ODE
-    const [odeString, setOdeString] = useState("y^2");
+    const [odeString, setOdeString] = useState("((1/2) - y) * (4 / 2) * (- log(1 - (y / 0.5)))^(1 - (1/4))");
     const [ode, setOde] = useState(math.compile(odeString));
     // h
     const [increment, setIncrement] = useState(0.01);
     const [started, setStarted] = useState(false);
     const [solution, setSolution] = useState<{ x: number, y: math.MathNumericType }[]>([{
         x: t_n,
-        y: 5 / 6
+        y: 1 / 4
     }]);
     const datasets = [{
         label: `Approximierte Lösung zu ${odeString}`,
@@ -89,7 +98,7 @@ export default function eulerschepolygonverfahren() {
                 <Stack flexDirection={"row"} justifyContent={"center"}>
                     <Controlbuttons started={started} setStarted={setStarted} setNext={() => {
                         const prevValue = solution[solution.length - 1]
-                        const nextValue = polygonverfahren_sbs(ode, prevValue.y, t_n + increment,
+                        const nextValue = verbesserter_euler_sbs(ode, prevValue.y, t_n + increment,
                             increment)
                         setSolution([...solution, nextValue])
                         setT_n(t_n + increment);
@@ -100,7 +109,6 @@ export default function eulerschepolygonverfahren() {
                 <div style={{ height: "100vh" }}>
                     <Line
                         data={{
-                            // labels: labels.map(x => x.toFixed(2)),
                             datasets: datasets
                         }}
                         options={{

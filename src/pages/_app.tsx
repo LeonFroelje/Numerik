@@ -71,6 +71,14 @@ export default function App({ Component, pageProps }: AppProps) {
                   Eulersches Polygonverfahren
                 </Link>
               </MenuItem>
+              <MenuItem>
+                <Link style={{textDecoration: "none", color: "#000"}} href={"verbesserteseulerverfahren"} onClick={(e) => {
+                  setAlgorithm(e.currentTarget.innerText)
+                }}>
+                  Verbessertes Eulerverfahren
+                </Link>
+              </MenuItem>
+
             </Menu>
             <Typography textAlign={"center"}>
               {algorithm}
