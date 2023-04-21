@@ -81,7 +81,7 @@ export default function verbesserteseulerverfahren() {
     const [started, setStarted] = useState(false);
     const [solution, setSolution] = useState<{ x: number, y: math.MathNumericType }[]>([{
         x: t_n,
-        y: 1 / 4
+        y: 0
     }]);
     const datasets = [{
         label: `Approximierte Lösung zu ${odeString}`,
