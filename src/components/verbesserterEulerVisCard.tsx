@@ -2,30 +2,10 @@ import Stack from '@mui/material/Stack';
 import Box from '@mui/material/Box';
 import Controlbuttons from './controlbuttons';
 import Slider from '@mui/material/Slider';
-import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend,
-    plugins,
-} from 'chart.js';
 import * as math from 'mathjs';
-import { Line } from "react-chartjs-2";
 import { useState } from "react";
 import CollapseCard from './CollapseCard';
-ChartJS.register(
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend,
-);
+import LineChartBox from './LineChartBox';
 
 
 const verbesserter_euler = (f: math.EvalFunction, y_n: math.MathNumericType,
@@ -61,7 +41,7 @@ export default function VerbesserterEulerVisCard(){
         y: 1/4
     }]);
     const datasets = [{
-        label: `Lösung zu y' = ${odeString}`,
+        label: `Lösung zu y' = ${odeString},  y(t_0) = ${solution[0].y}`,
         data: solution.map(sol => {
             return {
                 x: sol.x.toFixed(2),
@@ -116,27 +96,7 @@ export default function VerbesserterEulerVisCard(){
                 </Box>  
                 : ""
             }  
-
-            <Box width={"90vw"} alignSelf={"center"} height={"45vh"} display={"flex"} justifyContent={"center"}>
-                <Line
-                width={"100%"}
-                    data={{
-                        datasets: datasets
-                    }}
-                    options={{
-                        maintainAspectRatio: false,
-                        elements: {
-                            point: {
-                                backgroundColor: "red"
-                            },
-                            line: {
-                                backgroundColor: "red",
-                                borderColor: "red"
-                            }
-                        }
-                    }}
-                />
-            </Box>
+        <LineChartBox datasets={datasets}/>
         </Stack>
         }
     />

@@ -11,9 +11,9 @@ import { MathJaxContext } from "better-react-mathjax";
 import Link from 'next/link'
 
 const config = {
-  loader: { load: ["[tex]/html"] },
+  loader: { load: ["[tex]/html", "[tex]/mathtools", "[tex]/ams"]},
   tex: {
-    packages: { "[+]": ["html"] },
+    packages: { "[+]": ["html", "mathtools", "ams"]},
     inlineMath: [
       ["$", "$"],
       ["\\(", "\\)"]
@@ -68,7 +68,7 @@ export default function App({ Component, pageProps }: AppProps) {
         {['Bisektionsverfahren', 'Eulersches Polygonverfahren',
          'Verbessertes Eulerverfahren', 'Lagrange interpolation'].map((text, index) => (
           <>
-            <ListItem  key={text} sx={{
+            <ListItem  key={index} sx={{
               height: 60
             }} disablePadding>
               <ListItemButton id={text} component={Link} href={text.replace(" ", "").toLowerCase()} 
@@ -90,8 +90,8 @@ export default function App({ Component, pageProps }: AppProps) {
     <Paper sx={{
       display: "flex",
       flexDirection: 'column',
-      height: "100vh",
-      width: "100vw",
+      minHeight: "100vh",
+      minWidth: "100vw",
       gap: "1rem"
     }}>    
       <Box position={"sticky"} top={0} sx={{
