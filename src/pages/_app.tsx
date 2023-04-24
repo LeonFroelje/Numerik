@@ -72,27 +72,27 @@ export default function App({ Component, pageProps }: AppProps) {
 
   const drawerContent = (anchor: Anchor) => (
     <List>
-      {Object.keys(chapters).map((chapter, index) => (
+      {Object.keys(chapters).map((chapter, chapterIndex) => (
         <>
-          <ListItem key={index} sx={{
+          <ListItem key={chapterIndex} sx={{
               height: 60
             }}
             disablePadding
           >
             <ListItemButton onClick={() => {
               const newOpen = [...open]
-              newOpen[index] = !newOpen[index];
+              newOpen[chapterIndex] = !newOpen[chapterIndex];
               setOpen(newOpen);
             }}>
               <ListItemText primary={chapter}/>
-              {open[index] ? <ExpandLess/> : <ExpandMoreIcon/>}
+              {open[chapterIndex] ? <ExpandLess/> : <ExpandMoreIcon/>}
             </ListItemButton>
           </ListItem>
           <Divider/>
-          <Collapse in={open[index]} timeout={"auto"}>
-            {chapters[chapter].map((section: string, index: number) => {
+          <Collapse in={open[chapterIndex]} timeout={"auto"}>
+            {chapters[chapter].map((section: string, sectionIndex: number) => {
               return <>
-                <ListItem  key={index} sx={{
+                <ListItem  key={sectionIndex} sx={{
                   height: 60
                   }} disablePadding
                 >
@@ -104,6 +104,7 @@ export default function App({ Component, pageProps }: AppProps) {
                     }} 
                     onClick={(e: React.MouseEvent) => {
                       setAlgorithm(e.currentTarget.id)
+                      toggleDrawer("left", false);
                     }}
                   >
                     <ListItemText sx={{
@@ -142,9 +143,6 @@ export default function App({ Component, pageProps }: AppProps) {
           >
           <React.Fragment key={'left'}>
             <Button onClick={toggleDrawer("left", true)}>{<MenuIcon/>}</Button>
-            <ClickAwayListener onClickAway={() => {
-              toggleDrawer("left", false);
-            }}>
               <Drawer
                 sx={{
                   width: "90vw",
@@ -156,20 +154,20 @@ export default function App({ Component, pageProps }: AppProps) {
                     boxSizing: 'border-box',
                   },
                 }}
+                variant='temporary'
                 anchor={"left"}
                 open={state["left"]}
                 onClose={() => {
                   toggleDrawer("left", false);
                 }}
-                variant="persistent"
               >
                 <Stack direction={"row"} justifyContent={"space-between"} height={60}>
                   <Typography alignSelf={"center"} 
                     sx={{
-                      "font-weight": 500,
-                      "padding-left": "16px",
-                      "color": "rgba(0, 0, 0, 0.6)",
-                      "font-family": '"Roboto","Helvetica","Arial",sans-serif',
+                      fontWeight: 500,
+                      paddingLeft: "16px",
+                      color: "rgba(0, 0, 0, 0.6)",
+                      fontFamily: '"Roboto","Helvetica","Arial",sans-serif',
                     }}
                   >Verfahren
                   </Typography>
@@ -185,9 +183,8 @@ export default function App({ Component, pageProps }: AppProps) {
                 <Divider/>
                 {drawerContent("left")}
               </Drawer>
-            </ClickAwayListener>
           </React.Fragment>            
-          <Typography textAlign={"center"}>
+          <Typography>
             {algorithm}
           </Typography>
         </Stack>
