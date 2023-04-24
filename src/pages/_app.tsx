@@ -32,8 +32,8 @@ type Anchor = 'top' | 'left' | 'bottom' | 'right';
 
 const chapters: any = {
   "Grundlegende Konzepte": ["Auslöschung"],
-  "Interpolation ": ["Lagrange Interpolation"],
-  "Integration ": ["Interpolatorische Quadraturformel"],
+  "Interpolation": ["Lagrange Interpolation"],
+  "Integration": ["Interpolatorische Quadraturformel"],
   "Lineare Gleichungssysteme": ["QR Zerlegung"],
   "Nichtlineare Gleichungssysteme": ["Bisektionsverfahren"],
   "Gewöhnliche Differentialgleichungen": ["Eulersches Polygonverfahren", "Verbessertes Eulerverfahren"] 
