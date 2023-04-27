@@ -3,6 +3,8 @@ import LagrangeInterpolationVisCard from '@/components/lagrangeInterpolationVisC
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { MathJax } from 'better-react-mathjax';
+import * as d3 from "d3";
+
 
 export default function LagrangeInterpolation(){
     return(

@@ -46,18 +46,12 @@ for(let i = 0; i < Object.keys(chapters).length; i++){
 
 
 export default function App({ Component, pageProps }: AppProps) {
-  const [state, setState] = React.useState({
-    top: false,
-    left: false,
-    bottom: false,
-    right: false,
-  });
+  const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [algorithm, setAlgorithm] = useState("")
   // const open = Boolean(anchorEl);
   const [open, setOpen] = useState(o);
 
-  const toggleDrawer =
-    (anchor: Anchor, open: boolean) =>
+  const toggleDrawer = (open: boolean) =>
     (event: React.KeyboardEvent | React.MouseEvent) => {
       if (
         event.type === 'keydown' &&
@@ -67,61 +61,63 @@ export default function App({ Component, pageProps }: AppProps) {
         return;
       }
 
-      setState({ ...state, [anchor]: open });
+      setDrawerOpen(open);
     };
 
   const drawerContent = (anchor: Anchor) => (
-    <List>
-      {Object.keys(chapters).map((chapter, chapterIndex) => (
-        <>
-          <ListItem key={chapterIndex} sx={{
-              height: 60
-            }}
-            disablePadding
-          >
-            <ListItemButton onClick={() => {
-              const newOpen = [...open]
-              newOpen[chapterIndex] = !newOpen[chapterIndex];
-              setOpen(newOpen);
-            }}>
-              <ListItemText primary={chapter}/>
-              {open[chapterIndex] ? <ExpandLess/> : <ExpandMoreIcon/>}
-            </ListItemButton>
-          </ListItem>
-          <Divider/>
-          <Collapse in={open[chapterIndex]} timeout={"auto"}>
-            {chapters[chapter].map((section: string, sectionIndex: number) => {
-              return <>
-                <ListItem  key={sectionIndex} sx={{
-                  height: 60
-                  }} disablePadding
-                >
-                  <ListItemButton id={section} component={Link} 
-                    href={`/${chapter.replace(" ", "-").replace("ö", "oe").toLowerCase()}/${section.replace(" ", "").toLowerCase()}`} 
-                    sx={{
-                      height: "100%",
-                      pl: 4
-                    }} 
-                    onClick={(e: React.MouseEvent) => {
-                      setAlgorithm(e.currentTarget.id)
-                      toggleDrawer("left", false);
-                    }}
+    <ClickAwayListener onClickAway={() => {setDrawerOpen(false)}}>
+      <List sx={{height: "100%", overflow: "auto"}}>
+        {Object.keys(chapters).map((chapter, chapterIndex) => (
+          <>
+            <ListItem key={chapterIndex} sx={{
+                height: 60
+              }}
+              disablePadding
+            >
+              <ListItemButton onClick={() => {
+                const newOpen = [...open]
+                newOpen[chapterIndex] = !newOpen[chapterIndex];
+                setOpen(newOpen);
+              }}>
+                <ListItemText primary={chapter}/>
+                {open[chapterIndex] ? <ExpandLess/> : <ExpandMoreIcon/>}
+              </ListItemButton>
+            </ListItem>
+            <Divider/>
+            <Collapse in={open[chapterIndex]} timeout={"auto"}>
+              {chapters[chapter].map((section: string, sectionIndex: number) => {
+                return <>
+                  <ListItem  key={sectionIndex} sx={{
+                    height: 60
+                    }} disablePadding
                   >
-                    <ListItemText sx={{
-                      color: "#555"
+                    <ListItemButton id={section} component={Link} 
+                      href={`/${chapter.replace(" ", "-").replace("ö", "oe").toLowerCase()}/${section.replace(" ", "").toLowerCase()}`} 
+                      sx={{
+                        height: "100%",
+                        pl: 4
+                      }} 
+                      onClick={(e: React.MouseEvent) => {
+                        setAlgorithm(e.currentTarget.id)
+                        toggleDrawer(false);
                       }}
-                      primary={section}
-                    />
-                  </ListItemButton>
-                </ListItem>
-                <Divider/>
-              </>
-              })
-            }
-          </Collapse>
-        </>
-      ))}
-    </List>
+                    >
+                      <ListItemText sx={{
+                        color: "#555"
+                        }}
+                        primary={section}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                  <Divider key={sectionIndex + chapters[chapter].length}/>
+                </>
+                })
+              }
+            </Collapse>
+          </>
+        ))}
+      </List>
+    </ClickAwayListener>
   );
   return (
     <Paper sx={{
@@ -130,7 +126,8 @@ export default function App({ Component, pageProps }: AppProps) {
       minHeight: "100vh",
       maxWidth: "100vw",
       gap: "1rem",
-    }}>    
+    }}
+    >    
       <Box position={"sticky"} top={0} sx={{
         backgroundColor: "#FFF",
         zIndex: 2
@@ -142,7 +139,7 @@ export default function App({ Component, pageProps }: AppProps) {
           padding={".5rem 0rem"}
           >
           <React.Fragment key={'left'}>
-            <Button onClick={toggleDrawer("left", true)}>{<MenuIcon/>}</Button>
+            <Button onClick={toggleDrawer(true)}>{<MenuIcon/>}</Button>
               <Drawer
                 sx={{
                   width: "90vw",
@@ -156,9 +153,9 @@ export default function App({ Component, pageProps }: AppProps) {
                 }}
                 variant='temporary'
                 anchor={"left"}
-                open={state["left"]}
+                open={drawerOpen}
                 onClose={() => {
-                  toggleDrawer("left", false);
+                  toggleDrawer(false);
                 }}
               >
                 <Stack direction={"row"} justifyContent={"space-between"} height={60}>
@@ -172,7 +169,7 @@ export default function App({ Component, pageProps }: AppProps) {
                   >Verfahren
                   </Typography>
                   
-                  <IconButton onClick={toggleDrawer("left", false)} 
+                  <IconButton onClick={toggleDrawer(false)} 
                     sx={{
                       alignSelf: "center"
                     }}
