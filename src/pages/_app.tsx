@@ -66,10 +66,11 @@ export default function App({ Component, pageProps }: AppProps) {
 
   const drawerContent = (anchor: Anchor) => (
     <ClickAwayListener onClickAway={() => {setDrawerOpen(false)}}>
-      <List sx={{height: "100%", overflow: "auto"}}>
-        {Object.keys(chapters).map((chapter, chapterIndex) => (
-          <>
-            <ListItem key={chapterIndex} sx={{
+      <List sx={{height: "100%", overflow: "auto", paddingTop: 0}}>
+        {Object.keys(chapters).map((chapter, chapterIndex) => {
+          return (
+          <Box key={chapterIndex}>
+            <ListItem sx={{
                 height: 60
               }}
               disablePadding
@@ -78,6 +79,9 @@ export default function App({ Component, pageProps }: AppProps) {
                 const newOpen = [...open]
                 newOpen[chapterIndex] = !newOpen[chapterIndex];
                 setOpen(newOpen);
+              }}
+              sx={{
+                height: "100%"
               }}>
                 <ListItemText primary={chapter}/>
                 {open[chapterIndex] ? <ExpandLess/> : <ExpandMoreIcon/>}
@@ -86,36 +90,39 @@ export default function App({ Component, pageProps }: AppProps) {
             <Divider/>
             <Collapse in={open[chapterIndex]} timeout={"auto"}>
               {chapters[chapter].map((section: string, sectionIndex: number) => {
-                return <>
-                  <ListItem  key={sectionIndex} sx={{
-                    height: 60
-                    }} disablePadding
-                  >
-                    <ListItemButton id={section} component={Link} 
-                      href={`/${chapter.replace(" ", "-").replace("ö", "oe").toLowerCase()}/${section.replace(" ", "").toLowerCase()}`} 
-                      sx={{
-                        height: "100%",
-                        pl: 4
-                      }} 
-                      onClick={(e: React.MouseEvent) => {
-                        setAlgorithm(e.currentTarget.id)
-                        toggleDrawer(false);
-                      }}
+                return (
+                  <Box key={sectionIndex}>
+                    <ListItem sx={{
+                      height: 60
+                      }} disablePadding
                     >
-                      <ListItemText sx={{
-                        color: "#555"
+                      <ListItemButton id={section} component={Link}
+                        href={`/${chapter.replace(" ", "-").replace("ö", "oe").toLowerCase()}/${section.replace(" ", "").toLowerCase()}`} 
+                        sx={{
+                          height: "100%",
+                          pl: 4
+                        }} 
+                        onClick={(e: React.MouseEvent) => {
+                          setAlgorithm(e.currentTarget.id)
+                          toggleDrawer(false);
                         }}
-                        primary={section}
-                      />
-                    </ListItemButton>
-                  </ListItem>
-                  <Divider key={sectionIndex + chapters[chapter].length}/>
-                </>
+                      >
+                        <ListItemText sx={{
+                          color: "#555"
+                          }}
+                          primary={section}
+                        />
+                      </ListItemButton>
+                    </ListItem>
+                    <Divider/> 
+                  </Box>
+                  )
                 })
               }
             </Collapse>
-          </>
-        ))}
+          </Box>
+        )}
+      )}
       </List>
     </ClickAwayListener>
   );

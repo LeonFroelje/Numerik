@@ -4,86 +4,115 @@ import TextField from '@mui/material/TextField';
 import * as math from 'mathjs';
 import CollapseCard from './CollapseCard';
 import LineChart from "./d3Components/LineChart";
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { MathJax } from 'better-react-mathjax';
 import * as d3 from "d3"
+
 
 function validateInput(input: string): boolean {
     
     return false
 }
 
-const margin = {top: 10, right: 30, bottom: 30, left: 60};
-const width = 900 - margin.left - margin.right;
-const height = 500 - margin.top - margin.bottom;
+let height = 0;
+const margin = {top: 20, right: 30, bottom: 60, left: 40};
+
+const width = 700;
+// const height = 400 * (lineChartViewportHeight / 100);
 
 export default function LagrangeInterpolationVisCard(){
+    const lineChartBox = useRef<HTMLDivElement>();
     const basis_polynomials:  math.MathExpression = [];
     const basis_polynomials_s: string[] = []
     let linechart: any;
-    const datasets: {
+    let datasets: {
         label: string,
         data: {x: number, y: number}[]
     }[] = [];
     useEffect( () => {
-        datasets.push({
-            label: "kek",
-            data: [{x: 0, y: 50}, {x: 150, y: 150}, {x: 300, y: 100}, {x: 450, y: 20}, {x: 600, y: 130}]
-        })
+        height = 40 * window.innerHeight / 100 ;
+        if(lineChartBox && lineChartBox.current){
+            lineChartBox.current.style.height = `${height}`;
+            lineChartBox.current.style.maxHeight = `${height}`;
+            if(! lineChartBox.current.hasChildNodes()){
+                let sin = [];
+                for(let i = 0; i < 2 * math.pi * 2000; i++){
+                    sin.push({x: (i - 2 * math.pi * 1000) / 1000, y: math.sin((i - 2 * math.pi * 1000) / 1000)});
+                }
+                datasets.push({
+                    label: "kek",
+                    data: sin
+                })
 
-        const data = d3.group(datasets, (value) => {
-            return value.label
-        })
+                const data = d3.group(datasets, (value) => {
+                    return value.label
+                })
 
-        console.log(data)
-        const svg = d3.select("#line-chart-box")
-            .append("svg")
-            // .attr("width", width + margin.left + margin.right)
-            // .attr("height", height + margin.top + margin.bottom)
-            .attr("viewBox", `0 0 ${height + margin.top + margin.bottom} ${width + margin.left + margin.right}`)
-            .append("g")
-                .attr("transform", `translate(${margin.left},${margin.top})`)
-        const x: number[] = [];
-        datasets[0].data.forEach(tuple => {
-            x.push(tuple.x)
-        })
-        const xScale = d3.scaleLinear()
-            .domain([0, d3.max(x, (d) => d) as number])
-            .range([0, width])
+                const svg = d3.select("#line-chart-box")
+                    .append("svg")
+                    .attr("viewBox", `0 0 ${width} ${height}`)
+                    .append("g")
+                        .attr("transform", `translate(${margin.left},${margin.top})`)
 
-        svg.append("g")
-            .attr("transform", `translate(0,${height})`)
-            .call(d3.axisBottom(xScale).ticks(5))
-            .attr("viewBox", `0 0 ${height + margin.top + margin.bottom} ${width + margin.left + margin.right}`)
+            
+                const x: number[] = [];
+                datasets[0].data.forEach(tuple => {
+                    x.push(tuple.x)
+                })
 
-        const y: number[] = [];
-        datasets[0].data.forEach(tuple => {
-            y.push(tuple.y);
-        })
+                const xScale = d3.scaleLinear()
+                    .domain(d3.extent(x) as [number, number])
+                    .range([margin.left, width - margin.right])
+                    .nice()
 
-        const maxY: number = d3.max(y, (d) => d) as number
+                const y: number[] = [];
+                datasets[0].data.forEach(tuple => {
+                    y.push(tuple.y);
+                })
 
-        const yScale = d3.scaleLinear()
-            .domain([0, maxY + 10])
-            .range([height, height - maxY - 10 - margin.top - margin.bottom])
+                const yScale = d3.scaleLinear()
+                    .domain(d3.extent(y) as [number, number])
+                    .range([height - margin.bottom, margin.top])
+                    .nice()
 
-        svg.append("g")
-            .call(d3.axisLeft(yScale))
-            .attr("viewBox", `0 0 ${height + margin.top + margin.bottom} ${width + margin.left + margin.right}`)
+                
 
-        const d: [number, number][] = datasets[0].data.map(values => {
-            return [values.x, values.y]
-        })
-        svg.append("path")
-            .datum(d)
-            .attr("d", d3.line()
-                .x(d => {return d[0]})
-                .y(d => {return height - margin.top - d[1]})
-            )
-            .attr("stroke", "red")
-            .attr("stroke-width", 2)
-            .attr("fill", "none")
-            .attr("viewBox", `0 0 ${height + margin.top + margin.bottom} ${width + margin.left + margin.right}`);
+                svg.append("g")
+                    // .style("color", "#999")
+                    .style("opacity", "0.5")
+                    .attr("transform", `translate(0,${height - margin.bottom + margin.top - yScale(0)})`)
+                    .call(d3.axisBottom(xScale))
+
+                svg.append("g")
+                    // .style("color", "#999")
+                    .style("opacity", "0.5")
+                    .call(d3.axisLeft(yScale))
+                    .attr("transform", `translate(${margin.left + width - margin.right - xScale(0)},0)`);
+
+                d3.selectAll(".tick")
+                    .style("color", "#999")
+                    .style("opacity", "0.5")
+                    .style("font-size", "1rem")
+                    .filter((tick) => {
+                        return tick === 0
+                    })
+                    .remove()
+
+
+                const d: [number, number][] = datasets[0].data.map(values => {
+                    return [values.x, values.y]
+                })
+                svg.append("path")
+                    .datum(d)
+                    .attr("d", d3.line()
+                        .x(d => {return xScale(d[0])})
+                        .y(d => {return yScale(d[1])})
+                    )
+                    .attr("stroke", "red")
+                    .attr("stroke-width", 2)
+                    .attr("fill", "none")
+            }
+        }
     })
 
     return (
@@ -100,10 +129,7 @@ export default function LagrangeInterpolationVisCard(){
                         />
                             
                     </Box>
-                    So fett in Schwarz das Interpolationspolynom und in leichteren Farben die einzelnen Basispolynome.
-                    Rechts dann die Formeln für die Basispolynome undso
-                    <Box id="line-chart-box">
-
+                    <Box id="line-chart-box" ref={lineChartBox}>
                     </Box>
                 </Stack>
                 }
