@@ -30,14 +30,19 @@ export default function LagrangeInterpolationVisCard(){
         data: {x: number, y: number}[]
     }[] = [];
     useEffect( () => {
-        height = 40 * window.innerHeight / 100 ;
+        if(window.innerWidth > 1100){
+            height = 30 * window.innerHeight / 100;
+        }
+        else{
+            height = 50 * window.innerHeight / 100 ;
+        }
         if(lineChartBox && lineChartBox.current){
             lineChartBox.current.style.height = `${height}`;
             lineChartBox.current.style.maxHeight = `${height}`;
             if(! lineChartBox.current.hasChildNodes()){
                 let sin = [];
-                for(let i = 0; i < 2 * math.pi * 2000; i++){
-                    sin.push({x: (i - 2 * math.pi * 1000) / 1000, y: math.sin((i - 2 * math.pi * 1000) / 1000)});
+                for(let i = 0; i < 2 * math.pi * 10000; i++){
+                    sin.push({x: (i - 2 * math.pi * 5000) / 5000, y: math.sin((i - 2 * math.pi * 5000) / 5000)});
                 }
                 datasets.push({
                     label: "kek",
@@ -60,6 +65,7 @@ export default function LagrangeInterpolationVisCard(){
                     x.push(tuple.x)
                 })
 
+                console.log(d3.extent(x))
                 const xScale = d3.scaleLinear()
                     .domain(d3.extent(x) as [number, number])
                     .range([margin.left, width - margin.right])
@@ -82,12 +88,20 @@ export default function LagrangeInterpolationVisCard(){
                     .style("opacity", "0.5")
                     .attr("transform", `translate(0,${height - margin.bottom + margin.top - yScale(0)})`)
                     .call(d3.axisBottom(xScale))
-
-                svg.append("g")
-                    // .style("color", "#999")
-                    .style("opacity", "0.5")
-                    .call(d3.axisLeft(yScale))
-                    .attr("transform", `translate(${margin.left + width - margin.right - xScale(0)},0)`);
+                
+                let xMax = d3.max(x) as number;
+                if(xMax >= 0){        
+                    svg.append("g")
+                        .style("opacity", "0.5")
+                        .call(d3.axisLeft(yScale))
+                        .attr("transform", `translate(${margin.left + width - margin.right - xScale(0)},0)`);
+                }
+                else{
+                    svg.append("g")
+                        .style("opacity", "0.5")
+                        .call(d3.axisRight(yScale))
+                        .attr("transform", `translate(${xScale(xMax)},0)`);
+                }
 
                 d3.selectAll(".tick")
                     .style("color", "#999")
@@ -129,7 +143,7 @@ export default function LagrangeInterpolationVisCard(){
                         />
                             
                     </Box>
-                    <Box id="line-chart-box" ref={lineChartBox}>
+                    <Box id="line-chart-box" ref={lineChartBox} >
                     </Box>
                 </Stack>
                 }
