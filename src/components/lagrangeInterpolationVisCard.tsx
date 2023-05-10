@@ -70,13 +70,53 @@ const width = 700;
 
 export default function LagrangeInterpolationVisCard(){
     const lineChartBox = useRef<HTMLDivElement>();
-    const basis_polynomials:  math.MathExpression = [];
+    const [coordinates, setCoordinates] = useState<[number, number][]>([[0,0], [1,1]])
+    const [resolution, setResolution] = useState(100);
+    
     const basis_polynomials_s: string[] = []
+    coordinates.forEach((coordinate, i) => {
+        const factors: string[] = []
+        const x_i = coordinate[0];
+        for(let j = 0; j < coordinates.length; j++){
+            const x_j = coordinates[j][0];
+            if(j != i){
+                factors.push(`((x - ${x_j}) / (${x_i} - ${x_j}))`)
+            }
+        }
+        const basis_polynomial = factors.join(" * ");
+        basis_polynomials_s.push(basis_polynomial);
+    })
+    
+    const basis_polynomials:  math.EvalFunction[] = basis_polynomials_s.map(polynomial => {
+        return math.compile(polynomial)
+    });
+
+
     const [lel, setLel] = useState(0);
     let datasets: {
         label: string,
         data: {x: number, y: number}[]
     }[] = [];
+
+    const xMin = coordinates.reduce((prev, curr) => {
+        return prev[0] < curr[0] ? prev : curr
+    })[0]
+    const xMax = coordinates.reduce((prev, curr) => {
+        return prev[0] > curr[0] ? prev : curr
+    })[0];
+
+    basis_polynomials.forEach((polynomial, index) => {
+        const data: {x:number, y:number}[] = [];
+        const step = (xMax - xMin) / resolution;
+        for(let i = 0; i <= resolution; i++){
+            const x = xMin + i * step;
+            data.push({x: x, y: polynomial.evaluate({x: x})})
+        }
+        datasets.push({
+            label: basis_polynomials_s[index],
+            data: data
+        })
+    })
     // let dsets: = 
     useEffect( () => {
         // Window resizing viewbox stuff, if not done the chart is way too big 
@@ -110,16 +150,16 @@ export default function LagrangeInterpolationVisCard(){
                     }
                 }
                 // calculate domain and range
-                let range: number[] = [];
+                let ranges: number[][] = [];
                 let domain: number[] = [];
-                let graph:{x: number, y: number}[] = [];
-                for(let i = -100; i <= 100; i++){
-                    graph.push({x: 2 * math.pi * i / 100, y: math.sin(2 * math.pi * i / 100 + 1)});
-                }
-                datasets.push({
-                    label: "kek",
-                    data: graph
-                })
+                // let graph:{x: number, y: number}[] = [];
+                // for(let i = -100; i <= 100; i++){
+                    // graph.push({x: 2 * math.pi * i / 100, y: math.sin(2 * math.pi * i / 100 + 1)});
+                // }
+                // datasets.push({
+                    // label: "kek",
+                    // data: graph
+                // })
 
                 // create svg container and set the viewBox to the calculated width and height
                 const svg = d3.select("#line-chart-box")
@@ -130,8 +170,6 @@ export default function LagrangeInterpolationVisCard(){
                 svg
                     .append("g")
                     .attr("transform", `translate(${margin.left},${margin.top})`);
-
-                
                 
                 datasets[0].data.forEach(tuple => {
                     domain.push(tuple.x)
@@ -139,21 +177,26 @@ export default function LagrangeInterpolationVisCard(){
 
                 console.log(d3.extent(domain))
                 let domainExtent = d3.extent(domain) as [number, number];
-                let xMax = domainExtent[1];
-                let xMin = domainExtent[0];
+                // let xMax = domainExtent[1];
+                // let xMin = domainExtent[0];
                 
                 const xScale = d3.scaleLinear()
                     .domain(domainExtent)
                     .range([margin.left, width - margin.right])
                     // .nice()
-
-                datasets[0].data.forEach(tuple => {
-                    range.push(tuple.y);
+                const rangeExtents: [number, number][] = [];
+                datasets.forEach(dataset => {
+                    const range: number[] = [];
+                    dataset.data.forEach(tuple => {
+                        range.push(tuple.y);
+                    })
+                     rangeExtents.push(d3.extent(range) as [number, number]);
                 })
 
-                let rangeExtent = d3.extent(range) as [number, number];
-                let yMin = rangeExtent[0];
-                let yMax = rangeExtent[1];
+                const rangeExtent = rangeExtents.reduce((prev, curr) => {
+                    return prev[1] - prev[0] > curr[1] - curr[0] ? prev : curr;
+                })
+                console.log(rangeExtent)
                 const yScale = d3.scaleLinear()
                     .domain(rangeExtent)
                     .range([height - margin.bottom, margin.top])
@@ -182,19 +225,20 @@ export default function LagrangeInterpolationVisCard(){
                     })
                     .remove()
 
-
-                const d: [number, number][] = datasets[0].data.map(values => {
-                    return [values.x, values.y]
+                datasets.forEach(dataset => {
+                    const d: [number, number][] = dataset.data.map(values => {
+                        return [values.x, values.y]
+                    })
+                    svg.append("path")
+                        .datum(d)
+                        .attr("d", d3.line()
+                            .x(d => {return xScale(d[0])})
+                            .y(d => {return yScale(d[1])})
+                        )
+                        .attr("stroke", styles.lines.stroke)
+                        .attr("stroke-width", styles.lines.strokeWidth)
+                        .attr("fill", styles.lines.fill)
                 })
-                svg.append("path")
-                    .datum(d)
-                    .attr("d", d3.line()
-                        .x(d => {return xScale(d[0])})
-                        .y(d => {return yScale(d[1])})
-                    )
-                    .attr("stroke", styles.lines.stroke)
-                    .attr("stroke-width", styles.lines.strokeWidth)
-                    .attr("fill", styles.lines.fill)
             }
             else{
                 d3.select("#line-chart-box").selectAll("svg").remove()
@@ -211,8 +255,19 @@ export default function LagrangeInterpolationVisCard(){
                     <Box id="input-box" alignSelf={"center"}>
                         <TextField  label={"Stützstellen \\((x_i, y_i)\\)"} placeholder={"(x, y)"}
                          onChange={(event) => {
-                            console.log(event.currentTarget.value);
-
+                            const value = event.currentTarget?.value;
+                            const points = value.matchAll(/(\(\d+,(\s+)?\d+\))/g);
+                            const newCoordinates: [number, number][] = [];
+                            let changed = false;
+                            for (let point of points){
+                                const p = point[0].replaceAll(/[\(\)]/g, "").split(",").map(p => parseFloat(p)) as [number, number];
+                                newCoordinates.push(p);
+                            }
+                            newCoordinates.forEach(c => {
+                                if(!coordinates.find(coord => coord[0] === c[0] && coord[1] === c[1])){
+                                    setCoordinates(newCoordinates);
+                                }
+                            })
                          }}
                         />
                             
